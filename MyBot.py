@@ -1,4 +1,5 @@
 # -*- coding: cp1252 -*-
+#Comentario de vero
 import socket
 import time
  
