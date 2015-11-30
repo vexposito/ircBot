@@ -5,7 +5,7 @@ import time
  
 servidor = "irc.irc-hispano.org"
 canal = "#IRCvero"
-nombre = "BotVero"
+nombre = "Elisa20"
 puerto = 6667
  
 def respuesta_ping(ircmsg, canal):
@@ -72,13 +72,13 @@ while 1:
             mostrar_chat(ircmsg, canal)
        
       if ircmsg.find("Hola") != -1:
-            enviar_mensaje(canal, "Hola, soy el Bot de Vero")
+            enviar_mensaje(canal, "Hola, soy Elisa")
             
       if ircmsg.find("nombre") != -1:
-            enviar_mensaje(canal, "Me llamo VeroBot")
+            enviar_mensaje(canal, "Me llamo Elisa")
 
       if ircmsg.find("edad") != -1:
-            enviar_mensaje(canal, "Acabo de ser creado")
+            enviar_mensaje(canal, "20")
 
 
 
