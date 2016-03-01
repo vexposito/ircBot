@@ -5,11 +5,18 @@ import string # módulo que contiene las secuencias comunes de caracteres ASCII
 import random # módulo que se ocupa de la generación aleatoria
  
 servidor    = "irc.irc-hispano.org"
-canal       = "#Granada"
-nombre      = "Aliiicia"
+canal       = "#Melilla"
+nombre      = "Sariiita"
 puerto      = 6667
-ident       = "Aliiicia"
-realname    = "Aliiicia"
+ident       = "Sariiita"
+realname    = "Sariiita"
+canalNuevo  = ['#Malaga', '#Ceuta', '#Cadiz', '#Alicante', '#Canarias']
+            #Galicia','#Asturias', '#Murcia', '#Amigos', '#Madrid',
+            #Granada', '#Barcelona','#Andalucia']
+
+nombreNuevo = ['#Raquel20', '#Flor20', '#Carlota20', '#Mery20', '#Andrea20', '#Susi20',
+               '#Suri20', '#Moni20', '#Ami20', 'Marga20', 'Gracia20', 'Bea20',
+               'Andaluza20']
  
 def respuesta_ping(ircmsg, canal):
       if ircmsg.find("PING :") != -1:
@@ -25,8 +32,13 @@ def respuesta_ping(ircmsg, canal):
 def enviar_mensaje(canal , msg):
       irc.send("PRIVMSG "+ canal +" :"+ msg +"\n\r") 
       
+      
 def unirse_a_canal(canal):
       irc.send("JOIN "+ canal +"\n\r")
+
+def unirse_a_otro_canal(canal):
+      
+      irc.send("JOIN " + canal +"\n\r")
 
 def desconectarse(canal):
       irc.send("QUIT "+canal +"\n\r")
@@ -49,21 +61,14 @@ def obtener_mensaje(canal, ircmsg):
 def mostrar_chat(ircmsg, canal):
       print (obtener_nick(canal, ircmsg)+": "+obtener_mensaje(canal, ircmsg))
 
-#Crear lista de n elementos
+#Lista de palabras que el BOT utilizará aleatoriamente
 
-lista = [ 'tea', 'noe', 'amo', 'oca', 'ley','oso', 'fea','hucha', 'ave','torre',
-         'teta','tina','tomo','taco','tela','tiza','tufo','techo','tubo','nuera',
-         'nido','niño','nomo','nuca','nilo','nuez','naife','nicho','nube','mar',
-         'mito','mono','mama','meca','mulo','mesa','mafia','mecha','mapa','corro',
-         'codo','caño','cama','coco','cola','cazo','cafe','coche','cubo','lira',
-         'loto','luna','lima','loco','lulu','lazo','lofio','lucha','lupa','suero',
-         'soda','ceño','suma','saco','sol','seso','sofa','acecha','sapo','faro',
-         'foto','fino','fama','foca','falo','fosa','fofo','ficha','fobia','choro',
-         'chuto','chino','chama','chico','chal','choza','chufa','chocho','chipo','pera',
-         'pito','pino','puma','boca','pala','peso','bofe','bache','pipa','torero']
+lista = ['hola', 'pescao', 'holi', 'Chao', 'lunes','martes', 'hoola','nadie aqui', 'xao xao','oloa',
+         'oola','holaas','Buenos Dias','Buenas','Hello','Saludops','Hi','Good','good day','helloo',
+         'helou','Ola Caracola','Nainonaio','alguien','bonito dia','chao Chao','chao pescao','Lalala','jejejejejeje','jaja',
+         'nadi aqui','holoaa','hola amigo','aigo','amigo','what','lololol','saludis','wiiii','wola']
+
  
-     
-
       
 irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 irc.connect((servidor, puerto))
@@ -78,7 +83,7 @@ unirse_a_canal(canal)
 time.sleep(4)
 unirse_a_canal(canal)
 print "¡CONECTADO! " +"\n\r"
-print "INFORMACIÓNDE LA SESION" +"\n\r" + time.strftime('%H:%M:%S / %d %b %y')+"\n\r"+ "Canal: " + canal + "\n\r"+ "Servidor: " + servidor + "\n\r"
+print "INFORMACIÓNDE LA SESION" +"\n\r" + time.strftime('%H:%M:%S / %d %b %y')+"\n\r"+ "Canal: " + canal + "\n\r"+ "Servidor: " + servidor + "\n\r" + "Nombre de usuario: " + nombre + "\n\r"
 
 
 #time.sleep(5)
@@ -87,14 +92,70 @@ print "INFORMACIÓNDE LA SESION" +"\n\r" + time.strftime('%H:%M:%S / %d %b %y')+"
 
 while 1:
       ircmsg = irc.recv(512)
-      
+      print time.strftime('%H:%M:%S \n\r') + ircmsg  + "\n\r"
+       
       if ((ircmsg.find("PRIVMSG") != -1) != 1):
             respuesta_ping(ircmsg,canal)
-            obtener_mensaje(canal, ircmsg)
-            print ircmsg  + "\n\r" 
+            #obtener_mensaje(canal, ircmsg)             
             #enviar_mensaje(canal, "Hola")
-            #enviar_mensaje(canal,random.choice(lista))
+
+      #Envia un mensaje aleatorio de una lista     
+      #enviar_mensaje(canal,random.choice(lista))
+      respuesta_ping(ircmsg,canal)
+      irc.send("PING :%s\r\n" % canal)
+      print  irc.send("PING :%s\r\n" % canal)
+      time.sleep(10)
+      
+#Si el BOT recibe un mensaje de KILL/QUIT/PART/KICK se reconecta a
+#otro canal aleatorio dentro de la lista de canales.
+      if ((ircmsg.find("KILL") != -1) != 1):
+            canal = random.choice(canalNuevo)
+            irc.send("USER "+ nombre +" "+ nombre +" "+ nombre +" \n\r")
+            irc.send("NICK "+ nombre +"\n\r")
+            irc.send("NICK %s\r\n" % nombre)
+            irc.send("USER %s %s bla :%s\r\n" % (ident, servidor, realname))
+            irc.send("JOIN :%s\r\n" % canal)
+
+            print "Conectando a otro canal... "+"\n\r"
+            unirse_a_otro_canal(canal)
+            time.sleep(4)
+            unirse_a_otro_canal(canal)
+            print "¡CONECTADO! " +"\n\r"
+            print "INFORMACIÓNDE LA SESION" +"\n\r" + time.strftime('%H:%M:%S / %d %b %y')+"\n\r"+ "Canal: " + canal + "\n\r"+ "Servidor: " + servidor + "\n\r" + "Nombre de usuario: " + nombre + "\n\r"
+      #Enviar un 'hola' repetitivo independientemenente de si recibe o no un PRIVMSG
+      enviar_mensaje(canal, "Hola")
+      time.sleep(10)
             
-            ircmsg = ircmsg.strip('\n\r')
+      if ((ircmsg.find("QUIT") != -1) != 1):
+            canal = random.choice(canalNuevo)
+            irc.send("USER "+ nombre +" "+ nombre +" "+ nombre +" \n\r")
+            irc.send("NICK "+ nombre +"\n\r")
+            irc.send("NICK %s\r\n" % nombre)
+            irc.send("USER %s %s bla :%s\r\n" % (ident, servidor, realname))
+            irc.send("JOIN :%s\r\n" % canal)
 
+            print "Conectando a otro canal... "+"\n\r"
+            unirse_a_otro_canal(canal)
+            time.sleep(4)
+            unirse_a_otro_canal(canal)
+            print "¡CONECTADO! " +"\n\r"
+            print "INFORMACIÓNDE LA SESION" +"\n\r" + time.strftime('%H:%M:%S / %d %b %y')+"\n\r"+ "Canal: " + canal + "\n\r"+ "Servidor: " + servidor + "\n\r"+ "Nombre de usuario: " + nombre + "\n\r"
+      enviar_mensaje(canal, "Hola")
+      time.sleep(10)
 
+      if ((ircmsg.find("KICK") != -1) != 1):
+            canal = random.choice(canalNuevo)
+            irc.send("USER "+ nombre +" "+ nombre +" "+ nombre +" \n\r")
+            irc.send("NICK "+ nombre +"\n\r")
+            irc.send("NICK %s\r\n" % nombre)
+            irc.send("USER %s %s bla :%s\r\n" % (ident, servidor, realname))
+            irc.send("JOIN :%s\r\n" % canal)
+
+            print "Conectando a otro canal... "+"\n\r"
+            unirse_a_otro_canal(canal)
+            time.sleep(4)
+            unirse_a_otro_canal(canal)
+            print "¡CONECTADO! " +"\n\r"
+            print "INFORMACIÓNDE LA SESION" +"\n\r" + time.strftime('%H:%M:%S / %d %b %y')+"\n\r"+ "Canal: " + canal + "\n\r"+ "Servidor: " + servidor + "\n\r"+ "Nombre de usuario: " + nombre + "\n\r"
+
+      enviar_mensaje(canal, "Hola")
