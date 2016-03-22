@@ -67,12 +67,36 @@ def obtener_mensaje(canal, ircmsg):
 def mostrar_chat(canal, ircmsg):
       print (obtener_nick(canal, ircmsg) + " : " + obtener_mensaje(canal, ircmsg))
 
-           
+def existe_idev(idev):
+      print cursor.execute("SELECT IDEV FROM EVENTO WHERE IDEV == '" + idev + "'")
+      
+      if (cursor.fetchone())!= None:
+            return True
+      else:
+            return False
+            
+      
+
+def generar_idev(canal,ircmsg):
+      probarDeNuevo = True
+      while probarDeNuevo:            
+            numerito = random.choice(range(100))
+            t1 = time.strftime('%H %M %S')
+            t1 = t1.replace(" ", "")
+            idev = 'BOT0' + t1 + str(numerito)
+            if existe_idev(idev) == False:
+                  probarDeNuevo = False
+            else:
+                  probarDeNuevo = True                        
+      return idev
+
+
 def analizar_canal(canal,ircmsg):
       patron = ['wola', 'qtal']
       global capturar
       global cursor
       global con
+      global idev
       for i in patron:                  
             if ((ircmsg.find(i)!= -1)):
                   tiempo = time.strftime('%H:%M:%S / %d %b %y \n\r')
@@ -84,12 +108,13 @@ def analizar_canal(canal,ircmsg):
                   capturado = open('capturado.txt', 'w')                 
                   capturado.write(tiempo + '\n\r'  + 'Captura del canal: ' + canal + "\n\r")
                   # Creamos un IDEV para relacionar las dos tablas con el mismo ID
-                  
+                  idev = generar_idev(canal,ircmsg)
                   
                   # Escribir datos en una BD
                   capturar = True
-                  cursor.execute ("INSERT INTO EVENTO (IDEV, FECHA, CANAL, SERVIDOR, PATRON) VALUES ('" + tiempo + "' , '" + canal + "', '" + servidor +"', '" + i + "')")
+                  cursor.execute ("INSERT INTO EVENTO (IDEV, FECHA, CANAL, SERVIDOR, PATRON) VALUES ('" + idev + "' ,'" + tiempo + "' , '" + canal + "', '" + servidor +"', '" + i + "')")
                   con.commit()
+
     
                 
 
@@ -100,14 +125,15 @@ def guardar_msg(canal, ircmsg):
       capturado.write("\n\r" + '    ' + usuario + "\n\r" + '      '+ ircmsg + '\n\r')
       capturado.close()
 
-def guardar_bd(canal, ircmsg):
+def guardar_bd(canal, ircmsg, idev):
+      idev
       usuario = obtener_nick(canal, ircmsg)
       tiempo = time.strftime('%H:%M:%S / %d %b %y \n\r')
       con = sqlite3.connect('irc.db')
       #con_bd.close()
       cursor = con.cursor()
       #cursor_agenda.close()
-      cursor.execute ("INSERT INTO MENSAJES (IDEV, FECHA, CANAL, SERVIDOR, USUARIO, MENSAJE) VALUES ('" + tiempo + "' , '" + canal + "', '" + servidor + "', '" + usuario +"', '" + ircmsg +"')")
+      cursor.execute ("INSERT INTO MENSAJES (IDEV, FECHA, CANAL, SERVIDOR, USUARIO, MENSAJE) VALUES ('" + idev + "' ,'" + tiempo + "' , '" + canal + "', '" + servidor + "', '" + usuario +"', '" + ircmsg +"')")
       con.commit()
 
 
@@ -165,8 +191,7 @@ while 1:
             analizar_canal(canal,ircmsg)
             if (capturar == True):
                   #guardar_msg(canal,ircmsg)
-                  guardar_bd(canal,ircmsg)
-
+                  guardar_bd(canal, ircmsg, idev)
 
 
 
