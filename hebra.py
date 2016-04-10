@@ -1,14 +1,14 @@
 import threading
 from BotClases import BotClases
 
-patron      = ['qtal', 'wola']
+patron      = ['wola', 'ola']
 servidor    = "irc.irc-hispano.org"
 canal       = "#ircVero"
 nombre      = "__Aliiicia36"
 puerto      = 6667
 capturar    = False
 
-patron1      = ['qtal', 'wola']
+patron1      = ['wola', 'ola']
 servidor1    = "irc.irc-hispano.org"
 canal1       = "#ircVeroVero"
 nombre1      = "__Aliiicia"

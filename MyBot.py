@@ -51,7 +51,7 @@ class BotClases:
             print (self.obtener_nick(self.canal, ircmsg) + " : " + self.obtener_mensaje(self.canal, self.ircmsg))
 
       def existe_idev(self, idev):
-            print self.cursor.execute("SELECT IDEV FROM EVENTO WHERE IDEV == '" + idev + "'")            
+            print self.cursor.execute("SELECT IDEV FROM EVENTO WHERE IDEV == '" + self.idev + "'")            
             if (self.cursor.fetchone())!= None:
                   return True
             else:
@@ -63,19 +63,19 @@ class BotClases:
                   numerito    = random.choice(range(100))
                   t1          = time.strftime('%H %M %S')
                   t1          = t1.replace(" ", "")
-                  idev        = 'BOT0' + t1 + str(numerito)
-                  if self.existe_idev(idev) == False:
+                  self.idev        = 'BOT0' + t1 + str(numerito)
+                  if self.existe_idev(self.idev) == False:
                         probarDeNuevo = False
                   else:
                         probarDeNuevo = True                        
-            return idev
+            return self.idev
 
       def analizar_canal(self, canal,ircmsg):
             global capturar
             global cursor
             global con
             global idev
-
+            print "analizando canal"
             for i in self.patron:                  
                   if ((ircmsg.find(i)!= -1)):
                         tiempo = time.strftime('%d %b %y / %H:%M:%S \n\r')
@@ -87,10 +87,10 @@ class BotClases:
                         capturado = open('capturado.txt', 'w')                 
                         capturado.write(tiempo + '\n\r'  + 'Captura del canal: ' + self.canal + "\n\r")
                         # Creamos un IDEV para relacionar las dos tablas con el mismo ID
-                        idev = self.generar_idev()                        
+                        self.idev = self.generar_idev()                        
                         # Escribir datos en una BD
                         self.capturar = True
-                        self.cursor.execute ("INSERT INTO EVENTO (IDEV, FECHA, CANAL, SERVIDOR, PATRON) VALUES ('" + idev + "' ,'" + tiempo + "' , '" + self.canal + "', '" + self.servidor +"', '" + i + "')")
+                        self.cursor.execute ("INSERT INTO EVENTO (IDEV, FECHA, CANAL, SERVIDOR, PATRON) VALUES ('" + self.idev + "' ,'" + tiempo + "' , '" + self.canal + "', '" + self.servidor +"', '" + i + "')")
                         self.con.commit()  
                       
       def guardar_msg(self, canal, ircmsg):
@@ -103,7 +103,7 @@ class BotClases:
             cursor           = self.cursor
             con              = self.con
             usuario          = self.obtener_nick(self.canal, ircmsg)
-            tiempo           = time.strftime('%H:%M:%S / %d %b %y \n\r')
+            tiempo           = time.strftime('%d %b %y / %H:%M:%S \n\r')
             con              = sqlite3.connect('irc.db')          
             cursor           = con.cursor()  #con.close()
             #print '--> ' + usuario + "     " + '--> '+ self.ircmsg + '\n\r'
@@ -123,15 +123,15 @@ class BotClases:
             time.sleep(4)
             self.unirse_a_canal(self.canal)
             print '================================ CONECTADO ================================' + "\n\r"
-            print "INFORMACIONDE LA SESION" +"\n\r" + time.strftime('%H:%M:%S / %d %b %y')+"\n\r"+ "Canal: " + self.canal + "\n\r"+ "Servidor: " + self.servidor + "\n\r"
+            print "INFORMACION DE LA SESION" +"\n\r" + time.strftime('%H:%M:%S / %d %b %y')+"\n\r"+ "Canal: " + self.canal + "\n\r"+ "Servidor: " + self.servidor + "\n\r"
             print '===========================================================================' + "\n\r"
 
             while 1:
-                  self.ircmsg     = self.irc.recv(512)  #print time.strftime('%H:%M:%S \n\r') + ircmsg  + "\n\r"
+                  self.ircmsg     = self.irc.recv(1024)  
+                  #print time.strftime('%H:%M:%S \n\r') + self.ircmsg  + "\n\r"
                   self.con        = sqlite3.connect('irc.db')  #con_bd.close()
                   self.cursor     = self.con.cursor()  #cursor.close()
                   self.capturar   
-                  #respuesta_ping(canal, ircmsg)
 
                   if ((self.ircmsg.find("PING") != -1)):            
                         self.respuesta_ping(self.canal, self.ircmsg)
@@ -139,6 +139,5 @@ class BotClases:
                   if ((self.ircmsg.find("PRIVMSG") != -1)):            
                         self.analizar_canal(self.canal, self.ircmsg)
                         if (self.capturar == True):
-                              #guardar_msg(canal,ircmsg)
                               self.guardar_bd(self.canal, self.ircmsg, self.idev)
 
