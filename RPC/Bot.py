@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# -*- coding: 850 -*-
 import socket
 import time
 import string # modulo que contiene las secuencias comunes de caracteres ASCII
@@ -5,15 +8,22 @@ import random # modulo que se ocupa de la generacion aleatoria
 import sqlite3
 
 class Bot:    
-      def __init__(self, servidor, canal, nombre, puerto, patron):
+      def __init__(self, servidor, canal, nombre, puerto, patron, ID_Bot, ID_convers):
             self.irc          = None
             self.servidor     = servidor
             self.canal        = canal
             self.nombre       = nombre
             self.puerto       = puerto
             self.patron       = patron
-            capturar          = False 
+            self.patron       = self.patron.split(',')
+            self.ID_Bot       = ID_Bot
+            self.ID_event     = 0
+            self.ID_Convers   = ID_convers
+            self.tiempo       = time.localtime()
+            self.capturar     = False 
             self.funcionar    = 1
+            self.credito      = 0
+
 
       def respuesta_ping(self, canal, ircmsg):
             if ircmsg.find("PING :") != -1:
@@ -32,7 +42,7 @@ class Bot:
             self.irc.send("JOIN " + self.canal + "\n\r")
 
 
-      def  obtener_nick(self, canal, ircmsg):
+      def obtener_nick(self, canal, ircmsg):
             if ircmsg.find("PRIVMSG " + self.canal) != -1:
                   nick = ircmsg.split('!', 1 )
                   nick = nick[0].replace(":", "",1)
@@ -49,107 +59,206 @@ class Bot:
             print (self.obtener_nick(self.canal, ircmsg) + " : " + self.obtener_mensaje(self.canal, self.ircmsg))
 
       def existe_ID(self, ID):
-            print self.cursor.execute("SELECT ID FROM EVENTO WHERE ID == '" + self.ID + "'")            
+            print self.cursor.execute("SELECT ID_EVENT FROM EVENTO WHERE ID_EVENT == '" + self.ID_event + "'")            
             if (self.cursor.fetchone()) != None:
                   return True
             else:
                   return False
 
-      def existe_Bot_ID(self,ID):
-            print self.cursor.execute("SELECT ID FROM BOT WHERE ID =='" + self.Bot_ID + "'")
-            if(self.cursor.fetchone()) != None:
-                  return True
-            else:
-                  return False
-
-      def generar_event_ID(self):
+      def generar_ID_event(self):
             probarDeNuevo = True
             while probarDeNuevo:            
                   numerito    = random.choice(range(100))
                   t1          = time.strftime('%H %M %S')
                   t1          = t1.replace(" ", "")
-                  self.ID     = 'BOT0' + t1 + str(numerito)
-                  if self.existe_ID(self.ID) == False:
+                  self.ID_event = self.ID_Bot + "_" + t1 + str(numerito)
+                  if self.existe_ID(self.ID_event) == False:
                         probarDeNuevo = False
                   else:
                         probarDeNuevo = True                        
-            return self.ID
+            return self.ID_event
 
-      def generar_Bot_ID(self):
-            probarDeNuevo = True
-            while probarDeNuevo:            
-                  numerito          = random.choice(range(100))
-                  self.Bot_ID       = 'BOT_'  + str(numerito)
-                  if self.existe_ID(self.Bot_ID) == False:
-                        probarDeNuevo = False
-                  else:
-                        probarDeNuevo = True                        
-            return self.Bot_ID
+      def generar_ID_convers(self):
+            t1          = time.strftime('%H %M %S')
+            t1          = t1.replace(" ", "")
+            self.ID_convers = t1
 
-      def analizar_canal(self, canal,ircmsg):
-            for i in self.patron:                  
-                  if ((ircmsg.find(i)!= -1)):
-                        tiempo = time.strftime('%d %b %y / %H:%M:%S \n\r')
-                        print '================================ ENCONTRADO ==============================='+ "\n\r"
-                        print tiempo + "\n\r" + 'En el canal: ' + self.canal + "\n\r"
-                        print 'Se ha encontrado el patron: \'' + i + '\' \n\r'
-                        print '==========================================================================='+ "\n\r"
-                        ID = self.generar_event_ID()                        
-                        self.capturar = True
-                        self.cursor.execute (
-                              "INSERT INTO EVENTO (ID, FECHA, CANAL, SERVIDOR, PATRON) VALUES ('" 
-                              + ID + "' ,'" + tiempo + "' , '" + self.canal + "', '" + self.servidor +"', '" 
-                              + i + "')"
-                              )
-                        self.con.commit()  
-
-      def guardar_msg(self, ircmsg, ID):
-            usuario          = self.obtener_nick(self.canal, ircmsg)
-            mensaje          = self.obtener_mensaje(self.canal, ircmsg)
-            tiempo           = time.strftime('%d %b %y / %H:%M:%S \n\r')
+            # Almacenar numero de conversacion
             self.cursor.execute (
-                  "INSERT INTO MENSAJES (ID, FECHA, CANAL, SERVIDOR, USUARIO, MENSAJE) VALUES ('" 
-                  + ID + "' ,'" + tiempo + "' , '" + self.canal + "', '" + self.servidor + "', '" 
-                  + usuario +"', '" + mensaje +"')"
+                  " UPDATE BOT_INFO SET ID_CONVERS = ' " + str(self.ID_Bot) 
+                  + "'  WHERE ID_CONVERS = '" + str(self.ID_convers) +  "' "
                   )
             self.con.commit()
 
 
-      #def estado():
-      #def estado: dentro de irc en el estado en el que esta - conectado-escuchaando-capturadno..,.,
-      #num eventos...,canal,servidor,patron
-      #num usuarios en el canal,tiempo conexion,tiempo desde el ultimo patron, BOT_ID
-      #Tiempo de conexion en el bot, estado en el que se encuentra
 
-      def desconectarse(self, canal):
+            return self.ID_convers
+
+      # def existe_ID_Bot(self,ID):
+      #       print self.cursor.execute("SELECT ID FROM BOT WHERE ID =='" + self.ID_Bot + "'")
+      #       if(self.cursor.fetchone()) != None:
+      #             return True
+      #       else:
+      #             return False
+
+
+      # def generar_ID_Bot(self):
+      #       probarDeNuevo = True      ñ ´
+      #       while probarDeNuevo:            
+      #             numerito            = random.choice(range(100))
+      #             self.ID_Bot         = 'BOT_'  + str(numerito)
+      #             if self.existe_ID(self.ID_Bot) == False:
+      #                   probarDeNuevo = False
+      #             else:
+      #                   probarDeNuevo = True                        
+      #       return self.ID_Bot
+
+
+      def analizar_canal(self, canal,ircmsg):       
+            eventos = 0            
+            for i in self.patron:  
+                  mensaje = self.obtener_mensaje(self.canal, ircmsg)
+                  print "comparo -" + mensaje + "- con la palabra de nuestro patron: " + i     
+                  if ((mensaje.find(i)!= -1)):
+                        self.credito      = self.credito + 5
+                        print ">>----------> credito sumado: " + str(self.credito)
+                        self.tiempo       = time.time()
+                        self.ID_event     = self.generar_ID_event()
+
+                        # self.gestionar_creditos(self.credito, self.tiempo, ircmsg, self.ID_event)
+                        tiempo_almacenar  = time.strftime('%d %b %y / %H:%M:%S')
+
+                        print '================================ ENCONTRADO ==============================='+ "\n\r"
+                        print str(tiempo_almacenar) + "\n\r" + 'En el canal: ' + str(self.canal) + "\n\r"
+                        print 'Se ha encontrado el patron: \'' + i + '\' \n\r'
+                        print '==========================================================================='+ "\n\r"
+                        self.capturar     = True
+                        eventos           = eventos + 1
+
+                        # Anade a la base de datos del registro de los Bot un nuevo evento
+                        self.cursor.execute (
+                              " UPDATE BOT_INFO SET ID_BOT = ' " + str(self.ID_Bot) + "'  WHERE EVENTOS = '" + str(eventos) + "'"
+                              )
+                        # Almacena en la base de datos el evento capturado
+                        self.cursor.execute (
+                              "INSERT INTO EVENTO (ID_EVENT, FECHA, CANAL, SERVIDOR, PATRON) VALUES ('" 
+                              + self.ID_event + "' ,'" + tiempo_almacenar + "' , '" + self.canal + "', '" + self.servidor +"', '" 
+                              + i + "')"
+                              )
+                        self.con.commit() 
+            self.gestionar_creditos(self.credito, self.tiempo, self.ID_event, ircmsg, self.canal)
+            print ">>----------> nos queda \'" + str(self.credito) + "\' creditos"
+
+
+      def gestionar_creditos(self, credito, tiempo, ID_event, ircmsg, canal):
+            hace_falta_nuevo_IDconvers = True
+            if self.credito > 0 : 
+                  if hace_falta_nuevo_IDconvers:
+                        hace_falta_nuevo_IDconvers = False
+                        self.generar_ID_convers()
+                  if self.capturar:
+                        self.guardar_msg(ircmsg, self.ID_event, self.ID_convers)
+                  self.credito = self.credito - 1
+                  print "guardo msgs..." + str(self.credito) 
+                  tiempo_inicio     = self.tiempo
+                  tiempo_actual     = time.time()  # cada cuanto se calcula el timepo
+                  tiempo_pasa2      = tiempo_actual - tiempo_inicio
+                  tiempo           = time.strftime('%M:%S')
+
+                  if tiempo_pasa2 >= 10 : 
+                        if self.credito > 0 :                         
+                              self.capturar = True                              
+                              self.credito = self.credito - 1
+                              print "tiempo pasa... " + str(self.credito)                  
+                        else :
+                              self.capturar = False
+                              # self.analizar_canal(self.canal, ircmsg)
+                              print "me quedo escuchando..."
+                  return self.credito
+            else:
+                  hace_falta_nuevo_IDconvers = True
+
+
+                  
+            # tiempo entre palabras, tiempo entre el ultimo mensaje, numero palabras encontradas,
+            # Asignar credito entre palabras
+            # contador con el numero de palabras que voy encontrando
+            # 
+
+
+      def guardar_msg(self, ircmsg, ID_event, ID_convers):
+            usuario          = self.obtener_nick(self.canal, ircmsg)
+            mensaje          = self.obtener_mensaje(self.canal, ircmsg)
+            tiempo           = time.strftime('%d %b %y / %H:%M:%S')
+            self.conectar_DB()
+            self.cursor.execute (
+                  "INSERT INTO MENSAJES (ID_MSG, FECHA, CANAL, SERVIDOR, USUARIO, MENSAJE) VALUES ('" 
+                  + self.ID_event + "' ,'" + tiempo + "' , '" + self.canal + "', '" + self.servidor + "', '" 
+                  + usuario +"', '" + mensaje +"')"
+                  )
+            self.con.commit()
+
+      def desconexion(self, ID_Bot, canal):
             self.funcionar = 0;
             self.irc.send("QUIT" + self.canal + "\n\r")
-            print "Desconectado!"
+            tiempo         = time.strftime('%d %b %y / %H:%M:%S')
+            estado         = "OFF"
+            eventos        = 0   
+
+            # self.cursor.execute (
+            #       " UPDATE BOT_INFO SET ID_BOT = ' " + str(self.ID_Bot) 
+            #       + "'  WHERE EVENTOS = '" + str(eventos) + "', ULTIMA = '" 
+            #       + str(tiempo) + "' "
+            #       )
+            self.con.commit()
+            print ">> Desconectado BOT: !" + self.ID_Bot
             exit()
 
+            print ">> ADIOS <<"
+            exit()
+
+      def estado(self):
+            print ">> Estado del BOT: " + self.ID_Bot
+      # dentro de irc en el estado en el que esta - conectado-escuchaando-capturadno..,.,
+      # num eventos...,canal,servidor,patron
+      # num usuarios en el canal,tiempo conexion,tiempo desde el ultimo patron, ID_Bot
+      # Tiempo de conexion en el bot, estado en el que se encuentra
+
+
+      def conectar_DB(self):
+          reintentar = True
+          while reintentar: 
+              try:         
+                  self.con        = sqlite3.connect('C:/DjangoProyectos/irc.db')  #con_bd.close()
+                  self.cursor     = self.con.cursor()  #cursor.close()
+                  reintentar = False
+                  print ">> OK!  DB Abierta."
+              except:
+                  reintentar = True
+                  print ">> ERROR! Reintentando conexion con la DB."
+
+      def cerrar_DB(self):
+          print "Cerrando DB..."
+          self.cursor.close()
+          self.con.close()
 
       def conexion(self):   
-            # print ">> parametros del bot en BOT: "  + " \n\r" +  self.servidor + " \n\r" + self.canal + " \n\r" + self.nombre + " \n\r" + self.puerto + " \n\r" + self.patron + " \n\r"   
+            print ">> parametros del bot en BOT: "  + " \n\r" +  str(self.servidor) + " \n\r" +  str(self.canal) + " \n\r" + str(self.nombre) + " \n\r" + str(self.puerto) + " \n\r" + str(self.patron) + " \n\r"   
             try:
                   self.irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                  print 'Error en la conexion 1'
-                  print self.servidor
-                  print self.puerto
+                  print ' >> .Socket'
                   self.irc.connect((self.servidor, self.puerto))
-                  print 'Error en la conexion 2'
-                  self.irc.send("NICK " + self.nombre +"\r\n")
-                  print 'Error en la conexion 3'
+                  print ' >> .Connect'
+                  self.irc.send("NICK " + self.nombre + "\r\n")
+                  print ' >> NICK'
                   self.irc.send("USER " + self.nombre + " 0 * : " + self.nombre + "\r\n")
-                  print 'Error en la conexion 4'
+                  print ' >> USER'
                   self.irc.send("JOIN : %s \r\n" % self.canal)
-                  print 'Error en la conexion 5'
-                  #Conexion BD
-                  self.con    = sqlite3.connect('irc.db')  #con_bd.close()
-                  self.cursor = self.con.cursor()  #cursor.close()
+                  print ' >> JOIN canal'
+                  self.conectar_DB()
              
             except:
-                  print '>> Error en la conexion'
-                  exit()
+                  print '>> Error en la conexion con el IRC' + exit()
 
 
             print ">> Conectando... " + "\n\r"
@@ -158,13 +267,12 @@ class Bot:
             self.unirse_a_canal(self.canal) # REvisar
             print '================================ CONECTADO ================================' + "\n\r"
             print "INFORMACION DE LA SESION" + "\n\r"  + time.strftime('%H:%M:%S / %d %b %y') + "\n\r" + "Canal: " + self.canal + "\n\r" + "Servidor: " + self.servidor + "\n\r"
-            print "Patron de busqeda: " + self.patron
+            print "Patron de busqeda: " + str(self.patron)
             print '===========================================================================' + "\n\r"
 
 
-
             while self.funcionar:
-                  contador = 0
+                  contador   = 0
                   ircmsg     = self.irc.recv(1024)  
                   print time.strftime('%H:%M:%S \n\r') + ircmsg  + "\n\r"
  
@@ -173,8 +281,7 @@ class Bot:
 
                   elif ((ircmsg.find("PRIVMSG") != -1)):            
                         self.analizar_canal(self.canal, ircmsg)
-                        if (self.capturar == True):
-                              self.guardar_msg(ircmsg, self.ID)
+ 
                   else :
                         contador = contador + 1
                         print '>> Mensaje Desconocido'
@@ -182,5 +289,6 @@ class Bot:
                         if contador == 100:
                               exit()
                         pass
+
 
 
