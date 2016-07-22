@@ -25,7 +25,7 @@ class HebraBot(threading.Thread):
         self.ID_Bot       = ID_Bot
         #Conexion BD
         print "Abriendo BD..."
-        self.con        = sqlite3.connect('irc.db')  #con_bd.close()
+        self.con        = sqlite3.connect('C:/DjangoProyectos/irc.db')  #con_bd.close()
         self.cursor     = self.con.cursor()  #cursor.close()
 
         #Generamos un ID para el BOT y registramos el BOT:
@@ -70,7 +70,7 @@ class HebraBot(threading.Thread):
     def registro_Bot(self, servidor, canal):
         tiempo_ini      = time.strftime('%d %b %y / %H:%M:%S')
         t1              = time.strftime('%H %M %S')
-        self.ID_convers      = t1.replace(" ", "")
+        self.ID_convers = t1.replace(" ", "")
         tiempo_fin      = 0
         eventos         = 0
         estado          = "ON"
@@ -91,8 +91,8 @@ class HebraBot(threading.Thread):
         reintentar = False
 
     def desconexion(ID_Bot):
-        print " Desconectando..."
-        Bot.desconexion(self.ID_Bot)
+        # Bot.desconexion(self.ID_Bot)
+        thread._stop(self.ID_BOT)
 
     def estado(ID_BOT):
         threading.isAlive(name = ID_BOT)
@@ -112,7 +112,9 @@ def crear(servidor, canal, nombre, puerto, patron):
 
 def desconexion(ID_Bot):	
     print "Desconectando Bot con ID:" +  ID_Bot
-    HebraBot.desconexion(ID_Bot)	
+    # HebraBot.desconexion(ID_Bot)	
+    # hebra   = HebraBot(ID_Bot)
+    hebra._stop(name = ID_Bot)
 
 def conectar_DB():
     con = None
@@ -137,24 +139,27 @@ def consulta_DB_msg():
     print " ## TABLA DE MENSAJES ##"
     cursor.execute("SELECT ID_MSG, FECHA, CANAL, SERVIDOR, USUARIO, MENSAJE FROM MENSAJES")
     for i in cursor:
+        mensajes = {i[0], i[1], i[2], i[3], i[4], i[5]}
         # print "ID     |    FECHA   |   CANAL   |   SERVIDOR   |   USUARIO   |    MENSAJE"
-        # print i[0] +" | "+ i[1] +" | "+ i[2] +" | "+ i[3] +" | "+ i[4] +" | "+ i[5] 
-        print "ID_MSG   = ", i[0]
-        print "FECHA    = ", i[1]
-        print "------------------------------------------------"
-        print "   CANAL   |       SERVIDOR       |   USUARIO"
-        print "------------------------------------------------"
-        print i[2] + "   | " + i[3] + "  | " + i[4]
-        print "------------------------------------------------"
-        # print "FECHA    = ", i[1]
-        # print "CANAL    = ", i[2]
-        # print "SERVIDOR = ", i[3]
-        # print "USUARIO  = ", i[4]
-        print "MENSAJE  = ", i[5], "\n"
-        print "################################################", "\n"
-
+            # print i[0] +" | "+ i[1] +" | "+ i[2] +" | "+ i[3] +" | "+ i[4] +" | "+ i[5] 
+            # print "ID_MSG   = ", i[0]
+            # print "FECHA    = ", i[1]
+            # print "------------------------------------------------"
+            # print "   CANAL   |       SERVIDOR       |   USUARIO"
+            # print "------------------------------------------------"
+            # print i[2] + "   | " + i[3] + "  | " + i[4]
+            # print "------------------------------------------------"
+            # # print "FECHA    = ", i[1]
+            # # print "CANAL    = ", i[2]
+            # # print "SERVIDOR = ", i[3]
+            # # print "USUARIO  = ", i[4]
+            # print "MENSAJE  = ", i[5], "\n"
+            # print "################################################", "\n"
+        # }
     print "Operacion realizada con exito."
     cerrar_DB()
+    envio = servidorRpc(mensajes)
+    return mensajes
 
 ##--------------------------------------------------------------------------------------------------------------------------##
 def consulta_DB_evn():

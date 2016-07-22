@@ -118,6 +118,7 @@ class Bot:
             eventos = 0            
             for i in self.patron:  
                   mensaje = self.obtener_mensaje(self.canal, ircmsg)
+                  # mensaje = str(mensaje)
                   print "comparo -" + mensaje + "- con la palabra de nuestro patron: " + i     
                   if ((mensaje.find(i)!= -1)):
                         self.credito      = self.credito + 5
