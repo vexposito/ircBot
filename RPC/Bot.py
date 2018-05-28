@@ -230,13 +230,20 @@ class Bot:
           reintentar = True
           while reintentar: 
               try:         
-                  self.con        = sqlite3.connect('C:/DjangoProyectos/irc.db')  #con_bd.close()
+                  self.con        = sqlite3.connect('C:/Users/vexpo/Desktop/PROYECTO/Django-master/irc.db')  #con_bd.close()
                   self.cursor     = self.con.cursor()  #cursor.close()
                   reintentar = False
                   print ">> OK!  DB Abierta."
               except:
                   reintentar = True
-                  print ">> ERROR! Reintentando conexion con la DB."
+                  cont = 0
+                  if cont == 5:
+                        cursor.close()
+                        exit()
+                        print " No ha sido posible establecer conexión. "
+                  else:
+                        print " ERROR!(Bot) Reintentando conexion con la DB."
+                        cont = cont + 1
 
       def cerrar_DB(self):
           print "Cerrando DB..."

@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# -*- coding: 850 -*-
 import threading
 import xmlrpclib
 import sqlite3
@@ -25,7 +28,7 @@ class HebraBot(threading.Thread):
         self.ID_Bot       = ID_Bot
         #Conexion BD
         print "Abriendo BD..."
-        self.con        = sqlite3.connect('C:/DjangoProyectos/irc.db')  #con_bd.close()
+        self.con        = sqlite3.connect('C:/Users/vexpo/Desktop/PROYECTO/Django-master/irc.db')  #con_bd.close()
         self.cursor     = self.con.cursor()  #cursor.close()
 
         #Generamos un ID para el BOT y registramos el BOT:
@@ -119,13 +122,20 @@ def desconexion(ID_Bot):
 def conectar_DB():
     con = None
     try:         
-        con        = sqlite3.connect('C:/DjangoProyectos/irc.db')  #con_bd.close()
+        con        = sqlite3.connect('C:/Users/vexpo/Desktop/PROYECTO/Django-master/irc.db')  #con_bd.close()
         cursor     = con.cursor()  #cursor.close()
         reintentar = False
         print " OK!  DB Abierta."
     except:
-        print " ERROR! Reintentando conexion con la DB."
+        cont = 0
+        if cont == 5:
+            cursor.close()
+            exit()
+            print " No ha sido posible establecer concexión. "
+        else:
+            print " ERROR!(Master) Reintentando conexion con la DB."
     return con
+
 
 
 def cerrar_DB():
